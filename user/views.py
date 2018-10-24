@@ -158,6 +158,77 @@ def sendMessage(request,user_telephone):
         return JsonResponse({'code': "409"})
 
 
+# 获取用户基本信息
+def getUserInfo(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        # 根据token解析用户id
+        user_id = getToken(user_token)['user_id']
+        print(user_id)
+        try:
+
+            # 获取登录用户基本信息
+            userMsg = models.UserInfo.objects.filter(id=user_id).values('user__telephone','nickname','user__email',
+                                                                    'gender__sexname','location','username','signature','qq')
+
+            return JsonResponse({"userMsg": list(userMsg)},json_dumps_params={"ensure_ascii":False})
+        except Exception as ex:
+            return JsonResponse({"code":"408"})
+
+
+# 修改用户基本信息
+def updateMsg(request):
+    if request.method == 'POST':
+        update_msg = json.loads(request.body)
+        user_token = request.META.get('HTTP_TOKEN')
+        # 根据token解析用户id
+        user_id = getToken(user_token)['user_id']
+
+        print(update_msg)
+        try:
+            # 获取用户email
+            res = models.User.objects.filter(id=user_id).values('email')
+            if res and list(res)[0]['email'] != update_msg['email']:
+                obj = models.User.objects.get(id=user_id)
+                obj.email = update_msg['email']
+                obj.save()
+
+
+            if update_msg['gender_id']:
+                obj_info = models.UserInfo.objects.get(user_id=user_id)
+
+                obj_info.nickname = update_msg['nickname']
+                obj_info.gender_id = int(update_msg['gender_id'])
+                obj_info.location = update_msg['location']
+                obj_info.signature = update_msg['signature']
+                obj_info.username = update_msg['username']
+                obj_info.qq = update_msg['qq']
+
+                obj_info.save()
+                return JsonResponse({"code":"808"})
+            else:
+                obj_info = models.UserInfo.objects.get(user_id=user_id)
+
+                obj_info.nickname = update_msg['nickname']
+                obj_info.location = update_msg['location']
+                obj_info.signature = update_msg['signature']
+                obj_info.username = update_msg['username']
+                obj_info.qq = update_msg['qq']
+
+                obj_info.save()
+                return JsonResponse({"code": "808"})
+
+        except Exception as ex:
+            return JsonResponse({"code": "408"})
+
+
+
+
+
+
+
+
 # 根据token获取id
 def getUserbyToken(request):
     if request.method == 'POST':

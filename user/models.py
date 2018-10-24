@@ -47,7 +47,7 @@ class UserInfo(models.Model):
     nickname=models.CharField(max_length=64,null=True,blank=True)
 
     # 生日
-    birthday=models.IntegerField(null=True)
+    birthday=models.FloatField(null=True)
 
     # 个性签名
     signature=models.CharField(max_length=200,null=True,blank=True)
