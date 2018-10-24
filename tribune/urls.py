@@ -30,6 +30,9 @@ urlpatterns = [
     # 热门攻略 Postright
     url(r'hottri/', views.hottribune, name='hottribune'),
 
+    # 增加评论内容
+    url(r'zmAddComment/', views.zmAddComment, name='zmAddComment'),
+
 
 ]
 
