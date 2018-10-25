@@ -91,18 +91,7 @@ def thumbUpPost(request):
             return JsonResponse({"code": 500})
 
 
-# 攻略评论
-def commentPost(request):
-    if request.method == 'GET':
-        # 获取所有评论
-        # comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_pid__t_userid__nickname','tReply_pid__t_userid__icon','tReply_uid'))
-        comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_uid__nickname','tReply_uid__icon','tReply_uid'))
-        aa=[]
-        for co in comments:
-            co['tReply_time']=str(datetime.fromtimestamp(co['tReply_time'])).split('.')[0]
-            aa.append(co)
-        aa = sorted(aa,key=lambda co: co['tReply_time'], reverse=True)
-        return HttpResponse(json.dumps(aa,ensure_ascii=False))
+
 
 
 # 发表攻略
@@ -151,3 +140,17 @@ def zmAddComment(request):
         res['tReply_time']=time.time()
         models.TribuneReply.objects.create(**res)
         return HttpResponse('{"code":"202"}')
+
+
+# 攻略评论
+def commentPost(request):
+    if request.method == 'GET':
+        # 获取所有评论
+        # comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_pid__t_userid__nickname','tReply_pid__t_userid__icon','tReply_uid'))
+        comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_uid__nickname','tReply_uid__icon','tReply_uid'))
+        aa=[]
+        for co in comments:
+            co['tReply_time']=str(datetime.fromtimestamp(co['tReply_time'])).split('.')[0]
+            aa.append(co)
+        aa = sorted(aa,key=lambda co: co['tReply_time'], reverse=True)
+        return HttpResponse(json.dumps(aa,ensure_ascii=False))
