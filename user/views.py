@@ -163,10 +163,10 @@ def getUserInfo(request):
     if request.method == 'POST':
         user_token = request.META.get('HTTP_TOKEN')
 
-        # 根据token解析用户id
-        user_id = getToken(user_token)['user_id']
-        print(user_id)
-        if user_id:
+
+        if user_token:
+            # 根据token解析用户id
+            user_id = getToken(user_token)['user_id']
             try:
 
                 # 获取登录用户基本信息
@@ -187,11 +187,10 @@ def updateMsg(request):
     if request.method == 'POST':
         update_msg = json.loads(request.body)
         user_token = request.META.get('HTTP_TOKEN')
-        # 根据token解析用户id
-        user_id = getToken(user_token)['user_id']
 
-        print(update_msg)
-        if user_id:
+        if user_token:
+            # 根据token解析用户id
+            user_id = getToken(user_token)['user_id']
             try:
                 # 获取用户email
                 res = models.User.objects.filter(id=user_id).update(email=update_msg['email'])
@@ -208,6 +207,56 @@ def updateMsg(request):
                 return JsonResponse({"code": "408"})
         else:
             return JsonResponse({"code": "410"})
+
+
+# 修改密码
+def updatePassword(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        updateMsg =json.loads(request.body)
+
+        if user_token:
+            # 根据token解析用户id
+            user_id = getToken(user_token)['user_id']
+            try:
+                # 获取当前用户密码
+                user_pwd = models.User.objects.get(id=user_id).password
+                if check_password(updateMsg['old_pwd'],user_pwd):
+                    res = models.User.objects.filter(id=user_id).update(password=make_password(updateMsg['new_pwd']))
+                    print(res)
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                else:
+                    return JsonResponse({"code": "401"})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 绑定手机号
+def bindPhone(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        bindMsg =json.loads(request.body)
+
+        if user_token:
+            # 根据token解析用户id
+            user_id = getToken(user_token)['user_id']
+            try:
+                # 获取当前用户密码
+                user_telephone = models.User.objects.get(id=user_id).telephone
+                if user_telephone == bindMsg['new_telephone']:
+                    return JsonResponse({"code": "402"})
+                else:
+                    return JsonResponse({"code": "808"})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
+
 
 
 # 根据token获取id
