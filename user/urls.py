@@ -21,6 +21,12 @@ urlpatterns = [
     # 获取短信验证接口
     url(r'^sendmessage\w*/(?P<user_telephone>\d*)',views.sendMessage,name='sendmessage'),
 
+    # 根据token获取用户基本信息
+    url(r'^userinfo\w*/',views.getUserInfo,name='userinfo'),
+
+    # 修改用户基本信息
+    url(r'^updatemsg\w*',views.updateMsg,name='updatemsg'),
+
     # 根据token查询一定的用户信息 postRight
     url(r'gettoken', views.getUserbyToken, name='getUserbyToken'),
 
