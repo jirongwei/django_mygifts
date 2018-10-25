@@ -233,5 +233,9 @@ def getUserbyToken(request):
         return JsonResponse({"code": "409"})
 
 
+def getaddr(request):
+    userid=json.loads(request.body)["userid"]
+    addrmes=list(models.Address.objects.filter(user_address_id=userid).values("receiver","phone","province","city","area","detailLocation","status"))
+    return JsonResponse(addrmes, safe=False, json_dumps_params={"ensure_ascii": False})
 
 

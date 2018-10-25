@@ -78,5 +78,5 @@
       <textMaps />
     </LinkMapSettings>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.6 (flask_python_project) (1)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.6 (pyproject)" project-jdk-type="Python SDK" />
 </project>
