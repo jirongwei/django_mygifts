@@ -37,7 +37,11 @@ urlpatterns = [
     # 清空购物车
     url(r'clearcart/', views.clearCart, name='clearcart'),
 
+    # 订单展示
+    url(r'showorder/(?P<userid>\d+),(?P<ordertype>[a-z]+),(?P<page>\d+)/', views.showOrder, name='showorder'),
 
+    # 订单总页数
+    url(r'getorderpage/(?P<userid>\d+),(?P<ordertype>[a-z]+)/', views.getOrderpage, name='getorderpage'),
 
     # 加入收藏夹
     url(r'addcollect/',views.addCollectGift,name='addcollect'),

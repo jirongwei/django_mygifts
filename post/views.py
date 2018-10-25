@@ -34,7 +34,27 @@ def bindPhone(request):
 
 # 收藏-->展示
 def getCollectList(request):
-    pass
+    if request.method=='GET':
+        # 前端传来收藏的用户id
+        uid=request.GET.get('u_id')
+        # 这里定义一个空列表，将后面遍历出来的数据加进来
+        all_result=[]
+        # 通过id 查询
+        colpost=models.PostCollect.objects.filter(userinfo_id=uid).values('post_id_id','id','post_id__ptitle','post_id__pbriefcont')
+        print(colpost)
+        # 将查询到的结果遍历出来
+        for col in colpost:
+            # 获取里面的收藏的文章的ID
+            pe_id=col['post_id_id']
+            # 根据文章id查找用户id
+            collect=models.PostCollect.objects.filter(post_id_id=pe_id).values()
+            # print(collect)
+            # 将查出来的用户id通过.count计算出来个数
+            col['coll_count']=collect.count()
+            # 在插入到列表中
+            all_result.append(col)
+        return HttpResponse(json.dumps(list(all_result),ensure_ascii=False))
+
 
 # 收藏-->详情
 def getCollectDetail(request):

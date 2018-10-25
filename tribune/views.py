@@ -91,18 +91,7 @@ def thumbUpPost(request):
             return JsonResponse({"code": 500})
 
 
-# 攻略评论
-def commentPost(request):
-    if request.method == 'GET':
-        # 获取所有评论
-        # comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_pid__t_userid__nickname','tReply_pid__t_userid__icon','tReply_uid'))
-        comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_uid__nickname','tReply_uid__icon','tReply_uid'))
-        aa=[]
-        for co in comments:
-            co['tReply_time']=str(datetime.fromtimestamp(co['tReply_time'])).split('.')[0]
-            aa.append(co)
-        aa = sorted(aa,key=lambda co: co['tReply_time'], reverse=True)
-        return HttpResponse(json.dumps(aa,ensure_ascii=False))
+
 
 
 # 发表攻略
@@ -151,3 +140,26 @@ def zmAddComment(request):
         res['tReply_time']=time.time()
         models.TribuneReply.objects.create(**res)
         return HttpResponse('{"code":"202"}')
+
+
+# 攻略评论
+def commentPost(request):
+    if request.method == 'GET':
+        # 获取所有评论
+        # comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_pid__t_userid__nickname','tReply_pid__t_userid__icon','tReply_uid'))
+        comments = list(models.TribuneReply.objects.all().values('id', 'tReply_con', 'tReply_time', 'tReply_pid','tReply_uid__nickname','tReply_uid__icon','tReply_uid'))
+        aa=[]
+        for co in comments:
+            co['tReply_time']=str(datetime.fromtimestamp(co['tReply_time'])).split('.')[0]
+            aa.append(co)
+        aa = sorted(aa,key=lambda co: co['tReply_time'], reverse=True)
+        return HttpResponse(json.dumps(aa,ensure_ascii=False))
+
+
+# 我的攻略收藏
+def collectStrategis(request):
+    if request.method=='GET':
+        uid=request.GET.get('u_id')
+        strate=models.TribuneCollect.objects.filter(userinfo_id=uid).values('id','tribune_id__ttitle','tribune_id__ttitleimg','tribune_id__tdetailcont','tribune_id__id')
+        print(strate)
+        return HttpResponse(json.dumps(list(strate),ensure_ascii=False))

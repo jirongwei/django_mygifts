@@ -36,6 +36,7 @@ urlpatterns = [
     # 根据token查询一定的用户信息 postRight
     url(r'gettoken', views.getUserbyToken, name='getUserbyToken'),
 
-
+    # 根据userid查询用户收货地址
+    url(r'getaddr', views.getaddr, name='getaddr'),
 
 ]
