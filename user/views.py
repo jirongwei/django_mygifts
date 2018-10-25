@@ -166,15 +166,20 @@ def getUserInfo(request):
         # 根据token解析用户id
         user_id = getToken(user_token)['user_id']
         print(user_id)
-        try:
+        if user_id:
+            try:
 
-            # 获取登录用户基本信息
-            userMsg = models.UserInfo.objects.filter(id=user_id).values('user__telephone','nickname','user__email',
-                                                                    'gender__sexname','location','username','signature','qq')
+                # 获取登录用户基本信息
+                userMsg = models.UserInfo.objects.filter(id=user_id).values('user__telephone', 'nickname',
+                                                                            'user__email',
+                                                                            'gender__id', 'location', 'username',
+                                                                            'signature', 'qq')
 
-            return JsonResponse({"userMsg": list(userMsg)},json_dumps_params={"ensure_ascii":False})
-        except Exception as ex:
-            return JsonResponse({"code":"408"})
+                return JsonResponse({"userMsg": list(userMsg)}, json_dumps_params={"ensure_ascii": False})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
 
 
 # 修改用户基本信息
@@ -186,47 +191,23 @@ def updateMsg(request):
         user_id = getToken(user_token)['user_id']
 
         print(update_msg)
-        try:
-            # 获取用户email
-            res = models.User.objects.filter(id=user_id).values('email')
-            if res and list(res)[0]['email'] != update_msg['email']:
-                obj = models.User.objects.get(id=user_id)
-                obj.email = update_msg['email']
-                obj.save()
+        if user_id:
+            try:
+                # 获取用户email
+                res = models.User.objects.filter(id=user_id).update(email=update_msg['email'])
 
 
-            if update_msg['gender_id']:
-                obj_info = models.UserInfo.objects.get(user_id=user_id)
-
-                obj_info.nickname = update_msg['nickname']
-                obj_info.gender_id = int(update_msg['gender_id'])
-                obj_info.location = update_msg['location']
-                obj_info.signature = update_msg['signature']
-                obj_info.username = update_msg['username']
-                obj_info.qq = update_msg['qq']
-
-                obj_info.save()
-                return JsonResponse({"code":"808"})
-            else:
-                obj_info = models.UserInfo.objects.get(user_id=user_id)
-
-                obj_info.nickname = update_msg['nickname']
-                obj_info.location = update_msg['location']
-                obj_info.signature = update_msg['signature']
-                obj_info.username = update_msg['username']
-                obj_info.qq = update_msg['qq']
-
-                obj_info.save()
-                return JsonResponse({"code": "808"})
-
-        except Exception as ex:
-            return JsonResponse({"code": "408"})
-
-
-
-
-
-
+                obj_info = models.UserInfo.objects.filter(user_id=user_id).update(nickname = update_msg['nickname'],gender_id = int(update_msg['gender_id']),
+                                                                                  location = update_msg['location'],signature = update_msg['signature'],
+                                                                                  username = update_msg['username'],qq = update_msg['qq'])
+                if obj_info:
+                    return JsonResponse({"code":"808"})
+                else:
+                    return JsonResponse({"code": "401"})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
 
 
 # 根据token获取id
