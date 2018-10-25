@@ -92,6 +92,8 @@ class GiftsOrder(models.Model):
 
     field01=models.CharField(max_length=64,null=True)
 
+    
+
     # ForeignKey :UserInfo
     userinfo=models.ForeignKey(to=UserInfo,to_field='id',on_delete=models.CASCADE,default=1)
 

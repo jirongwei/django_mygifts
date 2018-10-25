@@ -280,6 +280,7 @@ def addCollectGift(request):
 # 结算商品
 def account(request):
     giftsmes = {}
+    giftsmes["address_id"]=json.loads(request.body)["addressid"]
     giftsmes["userinfo_id"] = json.loads(request.body)["userid"]
     giftsmes["gifts_id"] = json.loads(request.body)["postid"]
     giftsmes["order_num"] = json.loads(request.body)["postnum"]
@@ -295,6 +296,7 @@ def account(request):
     giftsmes["ordertime"] = int(time.time())
     order = models.GiftsOrder(**giftsmes)
     order.save()
+    models.GiftsCart.objects.filter(gifts_id=giftsmes["gifts_id"],userinfo_id=giftsmes["userinfo_id"]).delete()
     print(order.id)
     return HttpResponse({"code": "200"})
 
