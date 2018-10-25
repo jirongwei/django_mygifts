@@ -1,6 +1,6 @@
 from django.http import HttpResponse,JsonResponse
 import json,time
-
+import math
 from . import models
 
 # gift首页
@@ -403,7 +403,7 @@ def getAllPages(request,dayid,objid,sortid,con,pindex):
 
 def showOrder(request,userid,ordertype,page):
     page=int(page)
-    pageSize=5
+    pageSize=4
     if request.method=="GET":
         ordermes = list(
             models.GiftsOrder.objects.filter(userinfo_id=userid).values("gifts_id", "gifts__giftImg", "gifts__descr",
@@ -438,4 +438,32 @@ def showOrder(request,userid,ordertype,page):
     else:
         return HttpResponse(json.dumps({"code":"001"}))
 
+
+def getOrderpage(request,userid,ordertype):
+    if request.method=="GET":
+        pageSize = 4
+        ordermes = list(
+            models.GiftsOrder.objects.filter(userinfo_id=userid).values("gifts_id", "gifts__giftImg", "gifts__descr",
+                                                                        "gifts__gift_name", "gifts__price", "order_num",
+                                                                        "status__ststus_name", "ordertime"))
+        ordlist = []
+        if ordertype=="all":
+            for ord in ordermes:
+                ordlist.append(ord)
+        elif ordertype=="nopay":
+            for ord in ordermes:
+                if ord['status__ststus_name']=="待付款":
+                    ordlist.append(ord)
+        elif ordertype=="history":
+            for ord in ordermes:
+                if ord["status__ststus_name"]=="已完成":
+                    ordlist.append(ord)
+        elif ordertype=="nofinish":
+            for ord in ordermes:
+                if ord["status__ststus_name"]!="已完成":
+                    ordlist.append(ord)
+        pages=math.ceil(len(ordlist)/pageSize)
+        return HttpResponse(pages)
+    else:
+        return HttpResponse(json.dumps({"code":"001"}))
 
