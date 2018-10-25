@@ -33,6 +33,8 @@ urlpatterns = [
     # 增加评论内容
     url(r'zmAddComment/', views.zmAddComment, name='zmAddComment'),
 
+    url(r'collection/', views.collectStrategis, name='collection'),
+
 
 ]
 

@@ -269,7 +269,16 @@ def clearCart(request):
 
 # 加入收藏
 def addCollectGift(request):
-    pass
+    if request.method=='GET':
+        # 前台发过来的用户id
+        uid=request.GET.get('u_id')
+        # 获取所有礼物对象
+        gifts=models.GiftsCollect.objects.filter(userinfo_id=uid).values('id','gifts__gift_name','gifts__giftImg','gifts__price','gifts__clicknum')
+        print(gifts)
+
+        return JsonResponse({"gifts":list(gifts)},json_dumps_params={'ensure_ascii':False})
+
+
 
 
 
