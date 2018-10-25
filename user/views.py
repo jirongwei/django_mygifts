@@ -158,6 +158,58 @@ def sendMessage(request,user_telephone):
         return JsonResponse({'code': "409"})
 
 
+# 获取用户基本信息
+def getUserInfo(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        # 根据token解析用户id
+        user_id = getToken(user_token)['user_id']
+        print(user_id)
+        if user_id:
+            try:
+
+                # 获取登录用户基本信息
+                userMsg = models.UserInfo.objects.filter(id=user_id).values('user__telephone', 'nickname',
+                                                                            'user__email',
+                                                                            'gender__id', 'location', 'username',
+                                                                            'signature', 'qq')
+
+                return JsonResponse({"userMsg": list(userMsg)}, json_dumps_params={"ensure_ascii": False})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 修改用户基本信息
+def updateMsg(request):
+    if request.method == 'POST':
+        update_msg = json.loads(request.body)
+        user_token = request.META.get('HTTP_TOKEN')
+        # 根据token解析用户id
+        user_id = getToken(user_token)['user_id']
+
+        print(update_msg)
+        if user_id:
+            try:
+                # 获取用户email
+                res = models.User.objects.filter(id=user_id).update(email=update_msg['email'])
+
+
+                obj_info = models.UserInfo.objects.filter(user_id=user_id).update(nickname = update_msg['nickname'],gender_id = int(update_msg['gender_id']),
+                                                                                  location = update_msg['location'],signature = update_msg['signature'],
+                                                                                  username = update_msg['username'],qq = update_msg['qq'])
+                if obj_info:
+                    return JsonResponse({"code":"808"})
+                else:
+                    return JsonResponse({"code": "401"})
+            except Exception as ex:
+                return JsonResponse({"code": "408"})
+        else:
+            return JsonResponse({"code": "410"})
+
+
 # 根据token获取id
 def getUserbyToken(request):
     if request.method == 'POST':

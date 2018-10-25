@@ -86,6 +86,9 @@ class GiftsOrder(models.Model):
     # 下单时间
     ordertime=models.FloatField()
 
+    # 地址id
+    address_id = models.SmallIntegerField(null=True)
+
 
     # 礼物备注
     note=models.CharField(max_length=200,null=True)
@@ -100,6 +103,10 @@ class GiftsOrder(models.Model):
 
     # ForeignKey :OrderStatus
     status=models.ForeignKey(to='OrderStatus',to_field='id',on_delete=models.CASCADE,default=1)
+
+
+
+
 
 
 # 订单状态表 OrderStatus表
