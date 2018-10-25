@@ -154,3 +154,12 @@ def commentPost(request):
             aa.append(co)
         aa = sorted(aa,key=lambda co: co['tReply_time'], reverse=True)
         return HttpResponse(json.dumps(aa,ensure_ascii=False))
+
+
+# 我的攻略收藏
+def collectStrategis(request):
+    if request.method=='GET':
+        uid=request.GET.get('u_id')
+        strate=models.TribuneCollect.objects.filter(userinfo_id=uid).values('id','tribune_id__ttitle','tribune_id__ttitleimg','tribune_id__tdetailcont','tribune_id__id')
+        print(strate)
+        return HttpResponse(json.dumps(list(strate),ensure_ascii=False))
