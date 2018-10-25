@@ -1,5 +1,5 @@
 from django.http import HttpResponse,JsonResponse
-import json
+import json,time
 
 from . import models
 
@@ -279,7 +279,24 @@ def addCollectGift(request):
 
 # 结算商品
 def account(request):
-    pass
+    giftsmes = {}
+    giftsmes["userinfo_id"] = json.loads(request.body)["userid"]
+    giftsmes["gifts_id"] = json.loads(request.body)["postid"]
+    giftsmes["order_num"] = json.loads(request.body)["postnum"]
+    maxnum=models.Gifts.objects.filter(id=giftsmes["gifts_id"]).values("store")[0]["store"]
+    print(maxnum)
+    if json.loads(request.body)["payStatus"]:
+        if maxnum<giftsmes["order_num"]:
+            return JsonResponse({"code":"111"})
+        else:
+            giftsmes["status_id"] = 2
+    else:
+        giftsmes["status_id"] = 1
+    giftsmes["ordertime"] = int(time.time())
+    order = models.GiftsOrder(**giftsmes)
+    order.save()
+    print(order.id)
+    return HttpResponse({"code": "200"})
 
 
 
@@ -382,8 +399,41 @@ def getAllPages(request,dayid,objid,sortid,con,pindex):
     except Exception as ex:
         return JsonResponse({"code":"408"})
 
-
-
-
+def showOrder(request,userid,ordertype,page):
+    page=int(page)
+    pageSize=5
+    if request.method=="GET":
+        ordermes = list(
+            models.GiftsOrder.objects.filter(userinfo_id=userid).values("gifts_id", "gifts__giftImg", "gifts__descr",
+                                                                        "gifts__gift_name", "gifts__price", "order_num",
+                                                                        "status__ststus_name", "ordertime"))
+        ordlist = []
+        if ordertype=="all":
+            for ord in ordermes:
+                ord['cart_num']=ord["order_num"]
+                ord['order_status']=ord["status__ststus_name"]
+                ordlist.append(ord)
+        elif ordertype=="nopay":
+            for ord in ordermes:
+                if ord['status__ststus_name']=="待付款":
+                    ord['cart_num']=ord["order_num"]
+                    ord['order_status']=ord["status__ststus_name"]
+                    ordlist.append(ord)
+        elif ordertype=="history":
+            for ord in ordermes:
+                if ord["status__ststus_name"]=="已完成":
+                    ord['cart_num']=ord["order_num"]
+                    ord['order_status']=ord["status__ststus_name"]
+                    ordlist.append(ord)
+        elif ordertype=="nofinish":
+            for ord in ordermes:
+                if ord["status__ststus_name"]!="已完成":
+                    ord['cart_num']=ord["order_num"]
+                    ord['order_status']=ord["status__ststus_name"]
+                    ordlist.append(ord)
+        ordlist=sorted(ordlist,key=lambda order:order["ordertime"],reverse=True)
+        return HttpResponse(json.dumps(ordlist[(page-1)*pageSize:page*pageSize],ensure_ascii=False))
+    else:
+        return HttpResponse(json.dumps({"code":"001"}))
 
 
