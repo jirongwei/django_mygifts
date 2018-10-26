@@ -3,6 +3,7 @@ from . import models
 import json
 import time
 from datetime import datetime
+from utils.Tools.tools import *
 
 # tribune首页
 def tribunes(request,page):
@@ -116,9 +117,18 @@ def collectStrategy(request):
             return JsonResponse({"code":500})
 
 
-# 关注
+# 攻略详情页面
 def concernPublisher(request):
-    pass
+    # 从前台接受到的攻略id
+    tid=request.GET.get('tid')
+    if request.method=='GET':
+        tribune=models.Tribune.objects.filter(id=tid).values('id','ttitle','t_userid__icon','ttitleimg','tdetailcont','t_createtime','t_userid__nickname')
+        print(tribune)
+        tribunes=[]
+        for t in tribune:
+            t['t_createtime']=str(datetime.fromtimestamp(t['t_createtime'])).split('.')[0]
+            tribunes.append(t)
+        return HttpResponse(json.dumps(list(tribunes),ensure_ascii=False))
 
 # 热门攻略
 def hottribune(request):
@@ -137,6 +147,9 @@ def hottribune(request):
 def zmAddComment(request):
     if request.method == 'POST':
         res=json.loads(request.body)
+        # user_id = res['tReply_uid_id']
+        # tokencon = getToken('')
+
         res['tReply_time']=time.time()
         models.TribuneReply.objects.create(**res)
         return HttpResponse('{"code":"202"}')
