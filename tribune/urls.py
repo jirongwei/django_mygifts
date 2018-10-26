@@ -36,6 +36,12 @@ urlpatterns = [
     url(r'collection/', views.collectStrategis, name='collection'),
 
 
+    # 攻略详情页攻略查询
+    url(r'searchgl/', views.getsearchgl, name='getsearchgl'),
+
+    # 攻略详情页攻略查询
+    url(r'searchglpages/', views.getsearchglpages, name='getsearchglpages'),
+
 ]
 
 
