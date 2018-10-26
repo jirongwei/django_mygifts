@@ -5,7 +5,7 @@ SECRET_KEY = 'leftheart.com'
 # 生成token
 def createToken(user_id):
     # 生成token
-    datetimeInt = datetime.utcnow() + timedelta(hours=1)
+    datetimeInt = datetime.utcnow() + timedelta(hours=3)
     option = {
         'iss': 'jobapp.com',  # token 的签发者
         'exp': datetimeInt,  # 过期时间
@@ -20,7 +20,7 @@ def createToken(user_id):
 def getToken(token):
     decode_token = ''
     try:
-        decode_token = jwt.decode(token,SECRET_KEY,audience='webkit', algorithms=['HS256'])
+        decode_token = jwt.decode(token,SECRET_KEY,audience='webkit', algorithms=['HS256'],options={'verify_exp':True})
     except jwt.ExpiredSignatureError:
         print('Error')
     except Exception as ex:
