@@ -476,3 +476,12 @@ def getOrderpage(request,userid,ordertype):
     else:
         return HttpResponse(json.dumps({"code":"001"}))
 
+def gethotgo(request):
+    if request.method=="GET":
+       try:
+           hotgood = models.Gifts.objects.all().values("id", "gift_name", "giftImg", "price", "clicknum")
+           hotgoods = list(sorted(hotgood, key=lambda hg: hg["clicknum"], reverse=True))
+           return JsonResponse(hotgoods[0:3], safe=False, json_dumps_params={"ensure_ascii": False})
+       except Exception as ee:
+           print(ee)
+           return HttpResponse(json.dumps({"code": "001"}))
