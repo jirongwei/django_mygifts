@@ -1,8 +1,9 @@
 from django.http import JsonResponse,HttpResponse
 from . import models
 import json
-import time
+import time,math
 from datetime import datetime
+from utils.Tools.tools import *
 
 # tribune首页
 def tribunes(request,page):
@@ -116,9 +117,18 @@ def collectStrategy(request):
             return JsonResponse({"code":500})
 
 
-# 关注
+# 攻略详情页面
 def concernPublisher(request):
-    pass
+    # 从前台接受到的攻略id
+    tid=request.GET.get('tid')
+    if request.method=='GET':
+        tribune=models.Tribune.objects.filter(id=tid).values('id','ttitle','t_userid__icon','ttitleimg','tdetailcont','t_createtime','t_userid__nickname')
+        print(tribune)
+        tribunes=[]
+        for t in tribune:
+            t['t_createtime']=str(datetime.fromtimestamp(t['t_createtime'])).split('.')[0]
+            tribunes.append(t)
+        return HttpResponse(json.dumps(list(tribunes),ensure_ascii=False))
 
 # 热门攻略
 def hottribune(request):
@@ -137,6 +147,9 @@ def hottribune(request):
 def zmAddComment(request):
     if request.method == 'POST':
         res=json.loads(request.body)
+        # user_id = res['tReply_uid_id']
+        # tokencon = getToken('')
+
         res['tReply_time']=time.time()
         models.TribuneReply.objects.create(**res)
         return HttpResponse('{"code":"202"}')
@@ -163,3 +176,72 @@ def collectStrategis(request):
         strate=models.TribuneCollect.objects.filter(userinfo_id=uid).values('id','tribune_id__ttitle','tribune_id__ttitleimg','tribune_id__tdetailcont','tribune_id__id')
         print(strate)
         return HttpResponse(json.dumps(list(strate),ensure_ascii=False))
+
+
+
+# 对gl进行条件查询
+def getsearchgl(request):
+    pagesize = 8
+    if request.method=='POST':
+        try:
+            tiaojian = json.loads(request.body)["tiaojian"]
+            if tiaojian:
+                page = json.loads(request.body)["page"]
+                glmes1=list(models.Tribune.objects.filter(ttitle__regex=tiaojian).values("id", "ttitle", "ttitleimg", "tbriefcont", "t_createtime"))
+                glmes2 = list(models.Tribune.objects.filter(tbriefcont__regex=tiaojian).values("id", "ttitle", "ttitleimg", "tbriefcont",
+                                                                                      "t_createtime"))
+                glmes=glmes1
+                for i in range(len(glmes2)):
+                    flog=True
+                    for j in range(len(glmes)):
+                        if glmes2[i]["id"]==glmes[j]["id"]:
+                            flog=False
+                            break
+                    if flog:
+                        glmes.append(glmes2[i])
+                glmes = sorted(glmes, key=lambda ll: ll["t_createtime"], reverse=True)[(page - 1) * pagesize:page * pagesize]
+                for i in range(len(glmes)):
+                    glmes[i]["clicknum"]=models.TribuneThumb.objects.filter(tribune_id=glmes[i]["id"]).count()
+                    glmes[i]["replynum"]=models.TribuneReply.objects.filter(tReply_pid=glmes[i]["id"]).count()
+                return HttpResponse(json.dumps(glmes, ensure_ascii=False))
+            else:
+                page = int(json.loads(request.body)["page"])
+                lens = models.Tribune.objects.all().values("id", "ttitle", "ttitleimg", "tbriefcont", "t_createtime")
+                lens = sorted(lens, key=lambda ll: ll["t_createtime"], reverse=True)[
+                       (page - 1) * pagesize:page * pagesize]
+                for i in range(len(lens)):
+                    lens[i]["clicknum"]=models.TribuneThumb.objects.filter(tribune_id=lens[i]["id"]).count()
+                    lens[i]["replynum"]=models.TribuneReply.objects.filter(tReply_pid=lens[i]["id"]).count()
+                return HttpResponse(json.dumps(list(lens), ensure_ascii=False))
+        except Exception as es:
+            print(es)
+            return JsonResponse({"code": "001"})
+
+# 查询攻略的页数
+def getsearchglpages(request):
+    pagesize = 8
+    if request.method=='POST':
+        try:
+            tiaojian = json.loads(request.body)["tiaojian"]
+            if tiaojian:
+                glmes1 = list(models.Tribune.objects.filter(ttitle__regex=tiaojian).values("id"))
+                glmes2 = list(
+                    models.Tribune.objects.filter(tbriefcont__regex=tiaojian).values("id"))
+                glmes = glmes1
+                for i in range(len(glmes2)):
+                    flog = True
+                    for j in range(len(glmes)):
+                        if glmes2[i]["id"] == glmes[j]["id"]:
+                            flog = False
+                            break
+                    if flog:
+                        glmes.append(glmes2[i])
+                pages=math.ceil(len(glmes)/pagesize)
+                return HttpResponse(pages)
+            else:
+                lens = models.Tribune.objects.all().count()
+                return HttpResponse(math.ceil(lens/pagesize))
+        except Exception as es:
+            print(es)
+            return JsonResponse({"code": "001"})
+

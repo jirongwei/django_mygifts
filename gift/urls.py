@@ -55,7 +55,10 @@ urlpatterns = [
 
 
     # 礼物类型
-    url(r'type',views.type,name='type'),
+    url(r'type/',views.type,name='type'),
+
+    # 攻略展示页面加载热门商品
+    url(r'hotgoods/',views.gethotgo,name='gethotgo'),
 
 
 
