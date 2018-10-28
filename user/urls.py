@@ -36,9 +36,24 @@ urlpatterns = [
     # 获取用户所有地址
     url(r'^getaddress\w*/',views.getAllAddress,name='getaddress'),
 
+    # 添加地址
+    url(r'^addaddr\w*/',views.addAddr,name='addaddr'),
+
+    # 用户头像上传，通过图片名称，返回七牛token和图片名称
+    url(r'qiniutoken/',views.sendToken, name='sendToken'),
+
+    # 给你一个图片名，将图片名存到头像表中，并且把当前用户的头像id改为新头像id
+    url(r'^iconurl\w*/(?P<url>.*)/',views.getIconUrl,name='iconurl'),
+
+    # 获取当前用户头像
+    url(r'^usericon\w*/',views.getUserIcon,name='usericon'),
+
+    # 获取当前登录用户的头像，昵称，积分
+    url(r'^getloginuser\w*/',views.getLoginUser,name='getloginuser'),
+
+
     # 根据token查询一定的用户信息 postRight
     url(r'gettoken', views.getUserbyToken, name='getUserbyToken'),
-
 
     # 根据userid查询用户收货地址
     url(r'getaddr', views.getaddr, name='getaddr'),
