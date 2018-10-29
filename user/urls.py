@@ -39,6 +39,15 @@ urlpatterns = [
     # 添加地址
     url(r'^addaddr\w*/',views.addAddr,name='addaddr'),
 
+    # 获取修改地址信息
+    url(r'^getupdate\w*/(?P<addrid>\d+)',views.updateAddr,name='getupdate'),
+
+    # 修改地址
+    url(r'^updateaddress\w*/(?P<addrid>\d+)',views.updateAddress,name='updateaddress'),
+
+    # 删除地址
+    url(r'^deladdr\w*/(?P<addrid>\d+)',views.delAddr,name='deladdr'),
+
     # 用户头像上传，通过图片名称，返回七牛token和图片名称
     url(r'qiniutoken/',views.sendToken, name='sendToken'),
 

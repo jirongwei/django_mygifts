@@ -438,6 +438,86 @@ def getLoginUser(request):
             return JsonResponse({"code": "410"})
 
 
+# 获取修改该地址的信息
+def updateAddr(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    update_addr = models.Address.objects.filter(id=addrid,user_address_id=user_id).values('receiver','province','city','area','detailLocation','phone','postcode')
+                    if update_addr:
+                        return JsonResponse({"update_addr":list(update_addr)},json_dumps_params={"ensure_ascii":False})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 修改地址
+def updateAddress(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    update_addr = models.Address.objects.filter(id=addrid,user_address_id=user_id).update(receiver=updateMsg['receiver'],province=updateMsg['province'],
+                                                                                                          city=updateMsg['city'],area=updateMsg['area'],detailLocation=updateMsg['detailLocation'],
+                                                                                                          phone=updateMsg['phone'],postcode=updateMsg['postcode'])
+                    if update_addr:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+# 删除地址
+def delAddr(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    res = models.Address.objects.filter(id=addrid,user_address_id=user_id).delete()
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
 
 # 根据token获取id
 def getUserbyToken(request):
