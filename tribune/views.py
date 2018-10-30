@@ -7,65 +7,29 @@ from utils.Tools.tools import *
 
 # tribune首页
 def tribunes(request,page):
+    pagesize=6
+    page=int(page)
     if request.method=='GET':
-        try:
-            glmes=[
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                },
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                },
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                },
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                },
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                },
-                {
-                    "glid": '001',
-                    "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
-                    "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
-                    "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
-                    "glclicknum": 100,
-                    "glreplynum": 200
-                }
+        # try:
+            gls=[]
+            glmes=list(models.Tribune.objects.all()[(page-1)*pagesize:page*pagesize].values("id","ttitleimg","ttitle","tbriefcont"))
+            for i in glmes:
+                gl={}
+                gl["glid"]=i["id"]
+                gl["glimg"]=i["ttitleimg"]
+                gl["gltitle"]=i["ttitle"]
+                gl["glcontent"]=i["tbriefcont"]
+                gl["glclicknum"]=models.TribuneThumb.objects.filter(userinfo_id=gl["glid"]).count()
+                gl["clickstatus"]=False
+                gl["colnum"]=models.TribuneCollect.objects.filter(userinfo_id=gl["glid"]).count()
+                gl["praisestatus"]=False
+                gl["glreplynum"]=models.TribuneReply.objects.filter(tReply_uid_id=gl["glid"]).count()
+                gls.append(gl)
 
-            ]
-
-            # glmes=models.
-            return JsonResponse(glmes,safe=False,json_dumps_params={"ensure_ascii":False})
-        except Exception as e:
-            print(e)
-            return HttpResponse({"code":"701"})
+            return JsonResponse(gls,safe=False,json_dumps_params={"ensure_ascii":False})
+        # except Exception as e:
+        #     print(e)
+        #     return HttpResponse({"code":"701"})
 
     elif request.method=='POST':
         return HttpResponse({"code":"801"})

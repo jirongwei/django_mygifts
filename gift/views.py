@@ -42,7 +42,9 @@ def Indexgifts(request,page):
                 good["goodprice"] = goo["price"]
                 good["goodimg"] = goo["giftImg"]
                 good["goodclicknum"] = models.GiftsThumb.objects.filter(gifts_id=good["goodid"]).count()
+                good["colstatus"]=False
                 good["goodreplynum"] = models.GiftsComment.objects.filter(gifts_id=good["goodid"]).count()
+                good["praisestatus"]=False
                 goodlist.append(good)
             return JsonResponse(goodlist, safe=False, json_dumps_params={"ensure_ascii": False})
         # except Exception as e:
