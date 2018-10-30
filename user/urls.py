@@ -48,6 +48,9 @@ urlpatterns = [
     # 删除地址
     url(r'^deladdr\w*/(?P<addrid>\d+)',views.delAddr,name='deladdr'),
 
+    # 顶部导航购物车
+    url(r'^cartauth\w*/',views.cartAuth,name='cartauth'),
+
     # 用户头像上传，通过图片名称，返回七牛token和图片名称
     url(r'qiniutoken/',views.sendToken, name='sendToken'),
 

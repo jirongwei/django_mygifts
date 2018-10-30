@@ -477,6 +477,7 @@ def updateAddress(request,addrid):
                 try:
                     # 获取该地址信息
                     addrid = int(addrid)
+                    updateMsg = json.loads(request.body)
                     update_addr = models.Address.objects.filter(id=addrid,user_address_id=user_id).update(receiver=updateMsg['receiver'],province=updateMsg['province'],
                                                                                                           city=updateMsg['city'],area=updateMsg['area'],detailLocation=updateMsg['detailLocation'],
                                                                                                           phone=updateMsg['phone'],postcode=updateMsg['postcode'])
@@ -516,6 +517,23 @@ def delAddr(request,addrid):
 
         else:
             return JsonResponse({"code": "410"})
+
+# 顶部导航Cart
+def cartAuth(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                return JsonResponse({"user_id": user_id})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
 
 
 

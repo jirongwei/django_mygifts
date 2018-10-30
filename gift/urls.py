@@ -29,10 +29,10 @@ urlpatterns = [
     url(r'addcart/',views.addCart,name='addcart'),
 
     # 获取购物车信息
-    url(r'getallcarts/',views.getAllCarts,name='getallcarts'),
+    url(r'getallcarts\w*/',views.getAllCarts,name='getallcarts'),
 
     # 删除商品
-    url(r'delgift/', views.delSelectedGift, name='delgift'),
+    url(r'delgift\w*/(?P<giftid>\d+)', views.delSelectedGift, name='delgift'),
 
     # 清空购物车
     url(r'clearcart/', views.clearCart, name='clearcart'),
