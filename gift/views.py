@@ -3,7 +3,6 @@ import json,time
 import math
 from . import models
 
-# gift首页
 def gifts(request):
     if request.method=='GET':
         gifts=models.Gifts.objects.all().values('id','gift_name','price','clicknum','giftImg')
@@ -14,25 +13,11 @@ def gifts(request):
 
         return HttpResponse(json.dumps(list(gifts),ensure_ascii=False))
 
-
-
-    # post = [
-    #     {
-    #         "goodid": '001',
-    #         "goodimg": 'https://img01.hua.com/uploadpic/newpic/9012060.jpg',
-    #         "goodtitle": '眷念--戴安娜粉玫瑰33枝，石竹梅围绕',
-    #         "goodprice": 338,
-    #         "goodclicknum": 56,
-    #         "goodreplynum": 33
-    #     }
-    # ]
-
-
 def Indexgifts(request,page):
     page=int(page)
     pagesize = 8;
     if request.method == 'GET':
-        # try:
+        try:
             goodlist = []
             goomes = list(models.Gifts.objects.all()[pagesize*(page-1):pagesize*page].values("id", "gift_name", "price","giftImg"))
             for goo in goomes:
@@ -47,9 +32,9 @@ def Indexgifts(request,page):
                 good["praisestatus"]=False
                 goodlist.append(good)
             return JsonResponse(goodlist, safe=False, json_dumps_params={"ensure_ascii": False})
-        # except Exception as e:
-        #     print(e)
-        #     return HttpResponse({"code": "701"})
+        except Exception as e:
+            print(e)
+            return HttpResponse({"code": "701"})
 
     elif request.method == 'POST':
         return HttpResponse({"code": "801"})
@@ -57,7 +42,37 @@ def Indexgifts(request,page):
     else:
         return HttpResponse({"code": "901"})
 
+def Indexcollectgifts(request):
+    if request.method=="POST":
+        try:
+            userid = json.loads(request.body)["userid"]
+            postid = json.loads(request.body)["postid"]
+            collectstatus = json.loads(request.body)["collectstatus"]
+            if collectstatus:
+                obj = models.GiftsCollect(userinfo_id=userid, gifts_id=postid)
+                obj.save()
+            else:
+                models.GiftsCollect.objects.filter(userinfo_id=userid, gifts_id=postid).delete()
+            return JsonResponse({"code":200})
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({"code":500})
 
+def indexthumbgifts(request):
+    if request.method=="POST":
+        try:
+            userid = json.loads(request.body)["userid"]
+            postid = json.loads(request.body)["postid"]
+            dianzanstatus = json.loads(request.body)["dianzanstatus"]
+            if dianzanstatus:
+                obj = models.GiftsThumb(userinfo_id=userid, gifts_id=postid)
+                obj.save()
+            else:
+                models.GiftsThumb.objects.filter(userinfo_id=userid, gifts_id=postid).delete()
+            return JsonResponse({"code": 200})
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({"code": 500})
 
 # gift详情
 def getGiftDetail(request,giftid):

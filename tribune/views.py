@@ -10,7 +10,7 @@ def tribunes(request,page):
     pagesize=6
     page=int(page)
     if request.method=='GET':
-        # try:
+        try:
             gls=[]
             glmes=list(models.Tribune.objects.all()[(page-1)*pagesize:page*pagesize].values("id","ttitleimg","ttitle","tbriefcont"))
             for i in glmes:
@@ -27,15 +27,17 @@ def tribunes(request,page):
                 gls.append(gl)
 
             return JsonResponse(gls,safe=False,json_dumps_params={"ensure_ascii":False})
-        # except Exception as e:
-        #     print(e)
-        #     return HttpResponse({"code":"701"})
+        except Exception as e:
+            print(e)
+            return HttpResponse({"code":"701"})
 
     elif request.method=='POST':
         return HttpResponse({"code":"801"})
 
     else:
         return HttpResponse({"code": "901"})
+
+
 
 
 # 攻略点赞
@@ -46,10 +48,10 @@ def thumbUpPost(request):
             postid = json.loads(request.body)["postid"]
             dianzanstatus = json.loads(request.body)["dianzanstatus"]
             if dianzanstatus:
-                obj = models.TribuneThumb(userinfo_id=userid, post_id_id=postid)
+                obj = models.TribuneThumb(userinfo_id=userid, tribune_id_id=postid)
                 obj.save()
             else:
-                models.TribuneThumb.objects.filter(userinfo_id=userid, post_id_id=postid).delete()
+                models.TribuneThumb.objects.filter(userinfo_id=userid, tribune_id_id=postid).delete()
             return JsonResponse({"code": 200})
         except Exception as ex:
             print(ex)
@@ -71,10 +73,10 @@ def collectStrategy(request):
             postid = json.loads(request.body)["postid"]
             collectstatus = json.loads(request.body)["collectstatus"]
             if collectstatus:
-                obj = models.TribuneCollect(userinfo_id=userid, post_id_id=postid)
+                obj = models.TribuneCollect(userinfo_id=userid, tribune_id_id=postid)
                 obj.save()
             else:
-                models.TribuneCollect.objects.filter(userinfo_id=userid, post_id_id=postid).delete()
+                models.TribuneCollect.objects.filter(userinfo_id=userid, tribune_id_id=postid).delete()
             return JsonResponse({"code":200})
         except Exception as ex:
             print(ex)
