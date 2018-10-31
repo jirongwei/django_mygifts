@@ -5,13 +5,14 @@ import time,math
 from datetime import datetime
 from utils.Tools.tools import *
 
+
 # tribune首页
 def tribunes(request,page):
     if request.method=='GET':
         try:
             glmes=[
                 {
-                    "glid": '001',
+                    "glid": 1,
                     "glimg": 'https://img01.hua.com/uploadpic/newpic/1073038.jpg',
                     "gltitle": '仙女的美貌会发光！绝美高光盘了解一下',
                     "glcontent": '刚开始学化妆的时候，不敢用高光，怕下手重了会不好看。但是自从尝试着用过一次以后，小礼君就成了彻彻底底的“追光者”！高光用得好，不仅能修饰面部细节，让整个妆面看起来更加饱满透亮，而且整张脸看起来都有一种“zanzanzan”的元气感。',
@@ -78,14 +79,16 @@ def tribunes(request,page):
 def thumbUpPost(request):
     if request.method=="POST":
         try:
-            userid = json.loads(request.body)["userid"]
+            my_token=json.loads(request.body)
+            new_token=getToken(my_token['my_token'])
+            print(new_token)
             postid = json.loads(request.body)["postid"]
-            dianzanstatus = json.loads(request.body)["dianzanstatus"]
-            if dianzanstatus:
-                obj = models.TribuneThumb(userinfo_id=userid, post_id_id=postid)
+            praisestatus = json.loads(request.body)["praisestatus"]
+            if praisestatus:
+                obj = models.TribuneThumb(userinfo_id=new_token['user_id'], tribune_id_id=postid)
                 obj.save()
             else:
-                models.TribuneThumb.objects.filter(userinfo_id=userid, post_id_id=postid).delete()
+                models.TribuneThumb.objects.filter(userinfo_id=new_token['user_id'], tribune_id_id=postid).delete()
             return JsonResponse({"code": 200})
         except Exception as ex:
             print(ex)
@@ -102,15 +105,21 @@ def publishPost(request):
 # 攻略收藏
 def collectStrategy(request):
     if request.method=="POST":
+
         try:
-            userid = json.loads(request.body)["userid"]
+            my_token = json.loads(request.body)
+            # print(my_token['my_token'])
+            new_token = getToken(my_token['my_token'])
+            # userid = json.loads(request.body)["userid"]
             postid = json.loads(request.body)["postid"]
             collectstatus = json.loads(request.body)["collectstatus"]
             if collectstatus:
-                obj = models.TribuneCollect(userinfo_id=userid, post_id_id=postid)
+                obj = models.TribuneCollect(userinfo_id=new_token['user_id'], tribune_id_id=postid)
                 obj.save()
+
             else:
-                models.TribuneCollect.objects.filter(userinfo_id=userid, post_id_id=postid).delete()
+                models.TribuneCollect.objects.filter(userinfo_id=new_token['user_id'], tribune_id_id=postid).delete()
+                print('aaaaaaaa')
             return JsonResponse({"code":200})
         except Exception as ex:
             print(ex)
@@ -123,7 +132,7 @@ def concernPublisher(request):
     tid=request.GET.get('tid')
     if request.method=='GET':
         tribune=models.Tribune.objects.filter(id=tid).values('id','ttitle','t_userid__icon','ttitleimg','tdetailcont','t_createtime','t_userid__nickname')
-        print(tribune)
+        # print(tribune)
         tribunes=[]
         for t in tribune:
             t['t_createtime']=str(datetime.fromtimestamp(t['t_createtime'])).split('.')[0]
@@ -147,11 +156,14 @@ def hottribune(request):
 def zmAddComment(request):
     if request.method == 'POST':
         res=json.loads(request.body)
+        print('-------------------------')
+        my_token = res['my_token']
+        new_token = getToken(my_token)['user_id']
+        print(new_token)
         # user_id = res['tReply_uid_id']
         # tokencon = getToken('')
-
         res['tReply_time']=time.time()
-        models.TribuneReply.objects.create(**res)
+        models.TribuneReply.objects.create(tReply_con=res['tReply_con'],tReply_time=res['tReply_time'],tReply_pid_id=res['tReply_pid_id'],tReply_uid_id=new_token)
         return HttpResponse('{"code":"202"}')
 
 
@@ -242,6 +254,6 @@ def getsearchglpages(request):
                 lens = models.Tribune.objects.all().count()
                 return HttpResponse(math.ceil(lens/pagesize))
         except Exception as es:
-            print(es)
+            # print(es)
             return JsonResponse({"code": "001"})
 
