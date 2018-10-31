@@ -4,6 +4,7 @@ import math
 from . import models
 from utils.Tools.tools import *
 
+# gift首页
 def gifts(request):
     if request.method=='GET':
         gifts=models.Gifts.objects.all().values('id','gift_name','price','clicknum','giftImg')
@@ -141,51 +142,76 @@ def addCart(request):
 # 获取购物车信息
 def getAllCarts(request):
     if request.method == 'POST':
-        try:
-            userid = json.loads(request.body)
-            # 根据用户id获取用户所有的购物车信息
-            carts = models.GiftsCart.objects.filter(userinfo_id=userid['userinfo_id']).all().values('gifts_id','gifts__gift_name',
-                    'gifts__descr','cart_num','gifts__giftImg','gifts__price')
-            return JsonResponse({"carts":list(carts)},json_dumps_params={"ensure_ascii":False})
-        except Exception as ex:
-            return JsonResponse({"code":"408"})
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 根据用户id获取用户所有的购物车信息
+                    carts = models.GiftsCart.objects.filter(userinfo_id=user_id).all().values('gifts_id', 'gifts__gift_name',
+                                                                                              'gifts__descr','cart_num', 'gifts__giftImg',
+                                                                                              'gifts__price')
+                    return JsonResponse({"carts": list(carts)}, json_dumps_params={"ensure_ascii": False})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
 
 # 删除指定商品
-def delSelectedGift(request):
+def delSelectedGift(request,giftid):
     if request.method == 'POST':
-        try:
-            carts = json.loads(request.body)
-            # 根据用户id删除用户商品
-            res = models.GiftsCart.objects.filter(userinfo_id=carts['userinfo_id'],gifts_id=carts['gifts_id']).delete()
-            if res:
-                return JsonResponse({"code":"808"})
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 根据用户id删除用户商品
+                    res = models.GiftsCart.objects.filter(userinfo_id=user_id,
+                                                          gifts_id=giftid).delete()
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "809"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
             else:
-                return JsonResponse({"code":"809"})
-        except Exception as ex:
-            return JsonResponse({"code":"408"})
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
 
 # 清空购物车
 def clearCart(request):
     if request.method == 'POST':
-        try:
-            userid = json.loads(request.body)
-            # 根据用户id清空购物车
-            res = models.GiftsCart.objects.filter(userinfo_id=userid['userinfo_id']).all().delete()
-            if res:
-                return JsonResponse({"code":"808"})
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 根据用户id清空购物车
+                    res = models.GiftsCart.objects.filter(userinfo_id=user_id).all().delete()
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "809"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
             else:
-                return JsonResponse({"code":"809"})
-        except Exception as ex:
-            return JsonResponse({"code":"408"})
+                return JsonResponse({"code": "410"})
 
-
-
-
-
-
-
-
-
+        else:
+            return JsonResponse({"code": "410"})
 
 
 # 加入收藏

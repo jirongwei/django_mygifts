@@ -16,7 +16,7 @@ urlpatterns = [
     url('regist/', views.regist, name='regist'),
 
     # 根据id判断用户是否存在
-    url(r'^getuser\w*/(?P<id>\d*)', views.getUserById, name='getuser'),
+    url(r'^getuser\w*/(?P<id>\d+)/', views.getUserById, name='getuser'),
 
     # 获取短信验证接口
     url(r'^sendmessage\w*/(?P<user_telephone>\d*)',views.sendMessage,name='sendmessage'),
@@ -46,7 +46,10 @@ urlpatterns = [
     url(r'^updateaddress\w*/(?P<addrid>\d+)',views.updateAddress,name='updateaddress'),
 
     # 删除地址
-    url(r'^deladdr\w*/(?P<addrid>\d+)',views.delAddr,name='deladdr'),
+    url(r'^deladdr\w*/(?P<addrid>\d+)/',views.delAddr,name='deladdr'),
+
+    # 顶部导航购物车
+    url(r'^cartauth\w*/',views.cartAuth,name='cartauth'),
 
     # 用户头像上传，通过图片名称，返回七牛token和图片名称
     url(r'qiniutoken/',views.sendToken, name='sendToken'),
