@@ -11,6 +11,12 @@ urlpatterns = [
     #  首页礼物区域，page代表[加载更多]
     url(r'indexgifts/(?P<page>\d*)', views.Indexgifts, name='gifts'),
 
+    #  首页礼物收藏
+    url(r'indexcolgifts/', views.Indexcollectgifts, name='indexcollectgifts'),
+
+    #  首页礼物点赞
+    url(r'indexthumbgifts/', views.indexthumbgifts, name='indexthumbgifts'),
+
     # 礼物多条件查询
     url(r'getSelectGifts/(?P<dayid>\d+),(?P<objid>\d+),(?P<sortid>\d+),(?P<con>\w*),(?P<pindex>\d+)/',views.getSelectGifts,
         name='getSelectGifts'),

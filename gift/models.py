@@ -155,12 +155,7 @@ class GiftsThumb(models.Model):
     # ForeignKey :UserInfo
     userinfo = models.ForeignKey(to=UserInfo, to_field='id', on_delete=models.CASCADE, default=1)
 
-    thumb_status_choices=((0,"未点赞"),
-                          (1,"点赞")
-                          )
 
-    # 点赞状态
-    thumb_status=models.SmallIntegerField(choices=thumb_status_choices)
 
 
 # 礼物评论表
