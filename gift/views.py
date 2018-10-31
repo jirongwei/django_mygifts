@@ -2,6 +2,7 @@ from django.http import HttpResponse,JsonResponse
 import json,time
 import math
 from . import models
+from utils.Tools.tools import *
 
 def gifts(request):
     if request.method=='GET':
@@ -45,14 +46,14 @@ def Indexgifts(request,page):
 def Indexcollectgifts(request):
     if request.method=="POST":
         try:
-            userid = json.loads(request.body)["userid"]
+            userid = getToken(json.loads(request.body)['userid'])
             postid = json.loads(request.body)["postid"]
             collectstatus = json.loads(request.body)["collectstatus"]
             if collectstatus:
-                obj = models.GiftsCollect(userinfo_id=userid, gifts_id=postid)
+                obj = models.GiftsCollect(userinfo_id=userid['user_id'], gifts_id=postid)
                 obj.save()
             else:
-                models.GiftsCollect.objects.filter(userinfo_id=userid, gifts_id=postid).delete()
+                models.GiftsCollect.objects.filter(userinfo_id=userid['user_id'], gifts_id=postid).delete()
             return JsonResponse({"code":200})
         except Exception as ex:
             print(ex)
@@ -61,14 +62,14 @@ def Indexcollectgifts(request):
 def indexthumbgifts(request):
     if request.method=="POST":
         try:
-            userid = json.loads(request.body)["userid"]
+            userid = getToken(json.loads(request.body)['userid'])
             postid = json.loads(request.body)["postid"]
             dianzanstatus = json.loads(request.body)["dianzanstatus"]
             if dianzanstatus:
-                obj = models.GiftsThumb(userinfo_id=userid, gifts_id=postid)
+                obj = models.GiftsThumb(userinfo_id=userid['user_id'], gifts_id=postid)
                 obj.save()
             else:
-                models.GiftsThumb.objects.filter(userinfo_id=userid, gifts_id=postid).delete()
+                models.GiftsThumb.objects.filter(userinfo_id=userid['user_id'], gifts_id=postid).delete()
             return JsonResponse({"code": 200})
         except Exception as ex:
             print(ex)

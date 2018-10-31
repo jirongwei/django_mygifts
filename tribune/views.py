@@ -42,9 +42,7 @@ def tribunes(request,page):
 def thumbUpPost(request):
     if request.method=="POST":
         try:
-            my_token=json.loads(request.body)
-            new_token=getToken(my_token['my_token'])
-            print(new_token)
+            new_token=getToken(json.loads(request.body)['my_token'])
             postid = json.loads(request.body)["postid"]
             praisestatus = json.loads(request.body)["praisestatus"]
             if praisestatus:
@@ -69,10 +67,7 @@ def publishPost(request):
 def collectStrategy(request):
     if request.method=="POST":
         try:
-            my_token = json.loads(request.body)
-            # print(my_token['my_token'])
-            new_token = getToken(my_token['my_token'])
-            # userid = json.loads(request.body)["userid"]
+            new_token = getToken(json.loads(request.body)['my_token'])
             postid = json.loads(request.body)["postid"]
             collectstatus = json.loads(request.body)["collectstatus"]
             if collectstatus:
@@ -80,7 +75,6 @@ def collectStrategy(request):
                 obj.save()
             else:
                 models.TribuneCollect.objects.filter(userinfo_id=new_token['user_id'], tribune_id_id=postid).delete()
-                print('aaaaaaaa')
             return JsonResponse({"code":200})
         except Exception as ex:
             print(ex)
