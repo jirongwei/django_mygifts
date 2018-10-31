@@ -71,6 +71,8 @@ class UserInfo(models.Model):
     # ForeignKey :Gender
     gender=models.ForeignKey(to='Gender',to_field='id',on_delete=models.CASCADE,default=1)
 
+    icons = models.ForeignKey(to='myicon',to_field='id',on_delete=models.CASCADE,default=1)
+
 
 
 # User 积分表
@@ -106,7 +108,12 @@ class Address(models.Model):
     postcode=models.CharField(max_length=16,null=True,blank=True)
 
     # 状态
-    status=models.SmallIntegerField(default=1)
+    status=models.SmallIntegerField(default=0)
 
     # ForeignKey :UserInfo
     user_address = models.ForeignKey(to='UserInfo', to_field='id', on_delete=models.CASCADE,default=1)
+
+
+# 用户头像表
+class myicon(models.Model):
+    iconurl = models.CharField(max_length=225)

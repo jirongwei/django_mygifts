@@ -3,6 +3,9 @@ import json
 from datetime import datetime
 import time
 
+from qiniu import Auth
+import uuid
+
 from . import models
 from utils.Tools.tools import createToken,getToken
 
@@ -287,6 +290,225 @@ def getAllAddress(request):
                         return JsonResponse({"address":list(user_address)},json_dumps_params={"ensure_ascii":False})
                     else:
                         return JsonResponse({"code": "401"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 用户添加地址
+def addAddr(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                addMsg = json.loads(request.body)
+                print(addMsg)
+                try:
+                    # 根据用户id添加地址
+                    res = models.Address.objects.filter(user_address_id=user_id).create(**addMsg)
+                    if res:
+                        return JsonResponse({"code":"808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 用户头像上传，通过图片名称，返回七牛token和图片名称
+def sendToken(request):
+    # import
+
+    if request.method == 'GET':
+        access_key = 'FWK-lVOxt6VsWtxTl75B8efU3_-OOc8f-bjDp8p9'
+        secret_key = 'W0orBmFERBkbwTjsqAdhjoS-bhOuU9hfC7sSVK58'
+        # 构建鉴权对象
+        q = Auth(access_key, secret_key)
+        # 要上传的空间
+        bucket_name = 'giftsapp'
+        # 上传到七牛后保存的文件名
+        key = str(uuid.uuid4()) + '.' + str(request.GET.get('key')).split('.')[-1]
+        # 生成上传 Token，可以指定过期时间等 一天
+        token = q.upload_token(bucket_name, key, 3600)
+        return JsonResponse({"token": token, "filename": key})
+
+
+# 给你一个图片名，将图片名存到头像表中，并且把当前用户的头像id改为新头像id
+def getIconUrl(request,url):
+
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 将图片名存到头像表中
+                    icon_url = {"iconurl":url}
+                    res = models.myicon.objects.create(**icon_url)
+                    if res:
+                        icon_id = models.myicon.objects.get(iconurl=url).id
+                        # 当前用户的头像id改为新头像id
+                        result = models.UserInfo.objects.filter(id=user_id).update(icons_id=icon_id)
+                        if result:
+                            return JsonResponse({"code": "808"})
+                        else:
+                            return JsonResponse({"code": "403"})
+
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 获取当前用户头像
+def getUserIcon(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取用户头像id
+                    res = models.UserInfo.objects.get(id=user_id).icons_id
+                    if res:
+                        icons_url = models.myicon.objects.filter(id=res).values('iconurl')
+                        if icons_url:
+                            return JsonResponse({"icons_url":list(icons_url)},json_dumps_params={"ensure_ascii":False})
+                        else:
+                            return JsonResponse({"code": "403"})
+
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+ # 获取当前登录用户的头像，昵称，积分
+def getLoginUser(request):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取用户头像、昵称、积分
+                    login_user = models.UserInfo.objects.filter(id=user_id).values('icons__iconurl','nickname','integral__integral_num')
+                    if login_user:
+
+                        return JsonResponse({"login_user":list(login_user)},json_dumps_params={"ensure_ascii":False})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 获取修改该地址的信息
+def updateAddr(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    update_addr = models.Address.objects.filter(id=addrid,user_address_id=user_id).values('receiver','province','city','area','detailLocation','phone','postcode')
+                    if update_addr:
+                        return JsonResponse({"update_addr":list(update_addr)},json_dumps_params={"ensure_ascii":False})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+
+# 修改地址
+def updateAddress(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    update_addr = models.Address.objects.filter(id=addrid,user_address_id=user_id).update(receiver=updateMsg['receiver'],province=updateMsg['province'],
+                                                                                                          city=updateMsg['city'],area=updateMsg['area'],detailLocation=updateMsg['detailLocation'],
+                                                                                                          phone=updateMsg['phone'],postcode=updateMsg['postcode'])
+                    if update_addr:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
+# 删除地址
+def delAddr(request,addrid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 获取该地址信息
+                    addrid = int(addrid)
+                    res = models.Address.objects.filter(id=addrid,user_address_id=user_id).delete()
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
                 except Exception as ex:
                     return JsonResponse({"code": "408"})
             else:

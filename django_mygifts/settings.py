@@ -61,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 # 跨域设置
-CORS_ORIGIN_ALLOW_ALL=False
+CORS_ORIGIN_ALLOW_ALL=True
 CORS_ORIGIN_WHITELIST=(
     'localhost:63342',
     'localhost:8080',

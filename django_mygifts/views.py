@@ -1,5 +1,5 @@
 from django.http import JsonResponse,HttpResponse
-
+import post.models
 # 网站首页
 def index(request):
     return HttpResponse('i am website Home')
@@ -9,41 +9,17 @@ def index(request):
 def som(request):
     if request.method == 'GET':
         try:
-            postimgs = [
-                {
-                    "userTelephone": "15776554502",
-                    "userImg": 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2474915043,820939899&fm=26&gp=0.jpg',
-                    "userName": "ff",
-                    "postId": "000",
-                    "postTitle": "疯流涕淌",
-                    "postContent": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
-                },
-                {
-                    "userTelephone": "15776554502",
-                    "userImg": 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2474915043,820939899&fm=26&gp=0.jpg',
-                    "userName": "ff",
-                    "postId": "000",
-                    "postTitle": "ww",
-                    "postContent": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
-                },
-                {
-                    "userTelephone": "15776554502",
-                    "userImg": 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2474915043,820939899&fm=26&gp=0.jpg',
-                    "userName": "ff",
-                    "postId": "000",
-                    "postTitle": "ww",
-                    "postContent": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
-                },
-                {
-                    "userTelephone": "15776554502",
-                    "userImg": 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2474915043,820939899&fm=26&gp=0.jpg',
-                    "userName": "ff",
-                    "postId": "000",
-                    "postTitle": "ww",
-                    "postContent": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
-                },
-            ]
-            # postimgs=models.
+            postimgs=[]
+            postmes = list(post.models.Post.objects.all()[0:4].values("id","ptitle","pbriefcont","p_userid__username","p_userid__user_id","p_userid__icon"))
+            for i in postmes:
+                pomes={}
+                pomes["userTelephone"]=i["p_userid__user_id"]
+                pomes["userImg"]=i["p_userid__icon"]
+                pomes["userName"]=i["p_userid__username"]
+                pomes["postId"]=i["id"]
+                pomes["postTitle"]=i["ptitle"]
+                pomes["postContent"]=i["pbriefcont"]
+                postimgs.append(pomes)
             return JsonResponse(postimgs, safe=False, json_dumps_params={"ensure_ascii": False})
         except Exception as e:
             print(e)
