@@ -98,7 +98,28 @@ def regist(request):
 
 # 根据id判断用户是否存在
 def getUserById(request,id):
-   pass
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    # 判断该用户是否存在
+                    res = models.User.objects.filter(telephone=id).first()
+                    if res:
+                        return JsonResponse({"code": "808"})
+                    else:
+                        return JsonResponse({"code": "403"})
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
 
 # 获取短信验证码
 def sendMessage(request,user_telephone):
@@ -128,7 +149,7 @@ def sendMessage(request,user_telephone):
             m.update(str(rawsig).encode('utf-8'))
             sig = m.hexdigest()
             params = urllib.parse.urlencode({'accountSid': accountSid,
-                                             'smsContent': "【苏州驰星】尊敬的用户，您的验证码为{0}".format(message),
+                                             'smsContent': "【左心房】尊敬的用户，欢迎您注册左心房平台，您的验证码为{0}".format(message),
                                              'to': user_telephone,
                                              'timestamp': timeStamp,
                                              'sig': sig})
@@ -252,6 +273,7 @@ def bindPhone(request):
     if request.method == 'POST':
         user_token = request.META.get('HTTP_TOKEN')
         bindMsg =json.loads(request.body)
+        print(bindMsg)
 
         if user_token:
             # 根据token解析用户id
@@ -259,19 +281,59 @@ def bindPhone(request):
             if my_token:
                 user_id = my_token['user_id']
                 try:
-                    # 获取当前用户密码
-                    user_telephone = models.User.objects.get(id=user_id).telephone
-                    if user_telephone == bindMsg['new_telephone']:
-                        return JsonResponse({"code": "402"})
+                    userPwd = models.User.objects.get(id=user_id).password
+                    if check_password(bindMsg['old_pwd'],userPwd):
+
+                        verification_code = bindMsg['phone_code']
+                        result = models.Register.objects.filter(telephone=bindMsg['new_telephone']).values('time', 'message_code').order_by('-time')[0]
+
+                        if result['message_code']:
+                            message = result['message_code']
+                            register_time = result['time']
+                        else:
+                            return JsonResponse({"statuscode": "408"})
+
+                        if str(verification_code) == message and int(time.mktime(datetime.now().timetuple())) - int(
+                                time.mktime(register_time.timetuple())) < 60:
+                            # 修改当前绑定手机号
+                            res = models.User.objects.filter(id=user_id).update(telephone=bindMsg['new_telephone'])
+                            if res:
+                                return JsonResponse({"statuscode": "808"})  # 修改成功
+                            else:
+                                return JsonResponse({"statuscode": "403"})  # 修改失败
+                        else:
+                            return JsonResponse({"statuscode": "802"})  # 短信验证码过期
                     else:
-                        return JsonResponse({"code": "808"})
+                        return JsonResponse({"statuscode": "801"})  # 密码错误
                 except Exception as ex:
-                    return JsonResponse({"code": "408"})
+                    return JsonResponse({"code": "408"})    # 服务异常
             else:
                 return JsonResponse({"code": "410"})
 
         else:
             return JsonResponse({"code": "410"})
+
+
+
+        if str(verification_code) == message and int(time.mktime(datetime.now().timetuple())) - int(
+                time.mktime(register_time.timetuple())) < 60:
+            user['password'] = make_password(user['password'])  # 密码进行加密
+
+            res = models.User.objects.create(telephone=user['telephone'], password=user['password'], role_id_id=1)
+            if res:
+                # 注册成功
+                # 签发token
+                resp = JsonResponse({"code": "202", "id": res.id}, status=200, charset='utf-8',
+                                    content_type='application/json')
+
+                resp['token'] = createToken(res.id)
+                resp['Access-Control-Expose-Headers'] = "token"
+                return resp
+            else:
+                # 注册失败
+                return JsonResponse({"code": "410"}, status=200, charset='utf-8', content_type='application/json')
+        else:
+            return JsonResponse({"statuscode": "407"})
 
 # 获取用户所有地址
 def getAllAddress(request):
