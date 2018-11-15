@@ -61,7 +61,21 @@ def thumbUpPost(request):
 
 # 发表攻略
 def publishPost(request):
-    pass
+    if request.method=="POST":
+        try:
+            tribune={}
+            tribune["ttitle"]=json.loads(request.body)["ttitle"]
+            tribune["ttitleimg"]=json.loads(request.body)["ttitleimg"]
+            tribune["tdetailcont"]=json.loads(request.body)["tdetailcont"]
+            tribune["tbriefcont"]=json.loads(request.body)["tbriefcont"]
+            tribune["t_createtime"]=time.time()
+            tribune["t_userid_id"]=json.loads(request.body)["t_userid_id"]
+            tribunesave=models.Tribune(**tribune)
+            tribunesave.save()
+            return HttpResponse({"code": tribunesave.id})
+        except Exception as ex:
+            print(ex)
+            return HttpResponse({"code": "901"})
 
 # 攻略收藏
 def collectStrategy(request):
