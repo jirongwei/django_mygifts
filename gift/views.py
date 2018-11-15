@@ -17,11 +17,11 @@ def gifts(request):
 
 def Indexgifts(request,page):
     page=int(page)
-    pagesize = 8;
+    pagesize = 8
     if request.method == 'GET':
         try:
             goodlist = []
-            goomes = list(models.Gifts.objects.all()[pagesize*(page-1):pagesize*page].values("id", "gift_name", "price","giftImg"))
+            goomes = list(models.Gifts.objects.all().order_by('price')[pagesize*(page-1):pagesize*page].values("id", "gift_name", "price","giftImg","type_id__typename","clicknum","remark","giftscollect__collectStatus"))
             for goo in goomes:
                 good = {}
                 good["goodid"] = goo["id"]
@@ -32,6 +32,10 @@ def Indexgifts(request,page):
                 good["colstatus"]=False
                 good["goodreplynum"] = models.GiftsComment.objects.filter(gifts_id=good["goodid"]).count()
                 good["praisestatus"]=False
+                good['clicknum']=goo['clicknum']
+                good['typename']=goo["type_id__typename"]
+                good['remark']=goo['remark']
+                good['giftscollect__collectStatus']=goo['giftscollect__collectStatus']
                 goodlist.append(good)
             return JsonResponse(goodlist, safe=False, json_dumps_params={"ensure_ascii": False})
         except Exception as e:
@@ -119,24 +123,39 @@ def getGiftsComments(request,giftid,cindex):
 
 # 加入购物车
 def addCart(request):
+
     if request.method == 'POST':
-        try:
-            cart = json.loads(request.body)
-            cart['gifts_id'] = int(cart['gifts_id'])
-            # 判断购物车是否存在商品
-            count = models.GiftsCart.objects.filter(gifts_id=cart['gifts_id']).count()
-            if count:
-                # 购物车已存在该商品
-                return JsonResponse({"code":"202"})
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    cart = json.loads(request.body)
+                    cart['gifts_id'] = int(cart['gifts_id'])
+                    cart['cart_num'] = int(cart['cart_num'])
+                    # 判断购物车是否存在商品
+                    count = models.GiftsCart.objects.filter(userinfo_id=user_id,gifts_id=cart['gifts_id']).count()
+                    if count:
+                        # 修改数量
+                        cart['cart_num'] += 1
+                        res = models.GiftsCart.objects.filter(userinfo_id=user_id,gifts_id=cart['gifts_id']).update(cart_num=cart['cart_num'])
+                        return JsonResponse({"code": "808"})
+                    else:
+                        # 将用户选择购物礼物加入购物车
+                        result = models.GiftsCart.objects.create(userinfo_id=user_id,gifts_id=cart['gifts_id'],cart_num = cart['cart_num'])
+                        return JsonResponse({"code": "808"})
+
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
             else:
-                # 将用户选择购物礼物加入购物车
-                res=models.GiftsCart.objects.create(**cart)
-                if res:
-                    return JsonResponse({"code":"808"})
-                else:
-                    return JsonResponse({"code": "809"})
-        except Exception as ex:
-            return JsonResponse({"code":"408"})
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
+
 
 
 # 获取购物车信息
@@ -293,7 +312,7 @@ def getSelectGifts(request,dayid,objid,sortid,con,pindex):
     sortid = int(sortid)
     pindex = int(pindex)
 
-    pageSize = 4
+    pageSize = 8
     start = pageSize * (pindex - 1)
     end = pageSize * pindex
     all_con={}
@@ -309,7 +328,7 @@ def getSelectGifts(request,dayid,objid,sortid,con,pindex):
 
     try:
         gifts=models.Gifts.objects.filter(**all_con).order_by(result).values(
-            'id','gift_name','giftImg','price','clicknum')[start:end]
+            'id','gift_name','giftImg','price','clicknum','remark','giftscollect__collectStatus')[start:end]
 
         return JsonResponse({"gifts":list(gifts)},json_dumps_params={"ensure_ascii":False})
     except Exception as ex:
@@ -356,6 +375,53 @@ def getAllPages(request,dayid,objid,sortid,con,pindex):
         return JsonResponse({"count":count}, json_dumps_params={"ensure_ascii": False})
     except Exception as ex:
         return JsonResponse({"code":"408"})
+
+# 礼物点赞
+def thumbGift(request,giftid):
+    if request.method == 'POST':
+        user_token = request.META.get('HTTP_TOKEN')
+
+        if user_token:
+            # 根据token解析用户id
+            my_token = getToken(user_token)
+            if my_token:
+                user_id = my_token['user_id']
+                try:
+                    giftid = int(giftid)
+                    # 获取当前礼物的点赞状态
+                    thumb_status = models.GiftsCollect.objects.filter(gifts_id=giftid,userinfo_id=user_id)
+                    if thumb_status:
+                        # 点赞数--
+                        click_num = models.Gifts.objects.filter(id=giftid).values('clicknum')[0]['clicknum']
+                        click_num -= 1
+                        # 修改点击量
+                        update_num = models.Gifts.objects.filter(id=giftid).update(clicknum=click_num)
+                        # 删除点赞表
+                        del_status= models.GiftsCollect.objects.filter(userinfo_id=user_id,gifts_id=giftid).delete()
+                        if update_num and del_status:
+                            return JsonResponse({"code": "809"})
+                        else:
+                            return JsonResponse({"code": "403"})
+                    else:
+                        # 点赞数++
+                        click_num = models.Gifts.objects.filter(id=giftid).values('clicknum')[0]['clicknum']
+                        click_num += 1
+                        # 修改点击量
+                        update_num = models.Gifts.objects.filter(id=giftid).update(clicknum=click_num)
+                        # 添加点赞表
+                        del_status = models.GiftsCollect.objects.create(userinfo_id=user_id, gifts_id=giftid,collectStatus=1)
+                        if update_num and del_status:
+                            return JsonResponse({"code": "808"})
+                        else:
+                            return JsonResponse({"code": "403"})
+
+                except Exception as ex:
+                    return JsonResponse({"code": "408"})
+            else:
+                return JsonResponse({"code": "410"})
+
+        else:
+            return JsonResponse({"code": "410"})
 
 def showOrder(request,userid,ordertype,page):
     page=int(page)

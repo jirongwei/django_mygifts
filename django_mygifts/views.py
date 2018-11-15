@@ -10,12 +10,12 @@ def som(request):
     if request.method == 'GET':
         try:
             postimgs=[]
-            postmes = list(post.models.Post.objects.all()[0:4].values("id","ptitle","pbriefcont","p_userid__username","p_userid__user_id","p_userid__icon"))
+            postmes = list(post.models.Post.objects.all()[0:4].values("id","ptitle","pbriefcont","p_userid__nickname","p_userid__user_id","p_userid__icon"))
             for i in postmes:
                 pomes={}
                 pomes["userTelephone"]=i["p_userid__user_id"]
                 pomes["userImg"]=i["p_userid__icon"]
-                pomes["userName"]=i["p_userid__username"]
+                pomes["userName"]=i["p_userid__nickname"]
                 pomes["postId"]=i["id"]
                 pomes["postTitle"]=i["ptitle"]
                 pomes["postContent"]=i["pbriefcont"]

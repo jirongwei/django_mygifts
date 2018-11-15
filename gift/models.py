@@ -34,7 +34,7 @@ class Gifts(models.Model):
     remark=models.CharField(max_length=64,null=True)
 
     giftId=models.CharField(max_length=64,null=True)
-    giftImg=models.CharField(max_length=100,null=True)
+    giftImg=models.CharField(max_length=200,null=True)
 
     # 礼物小提示
     gift_tip=models.CharField(max_length=64,null=True)
@@ -131,7 +131,7 @@ class GiftsCart(models.Model):
 
 # 礼物图片表 GiftsPic表
 class GiftsPic(models.Model):
-    pic_url=models.CharField(max_length=100,null=True)
+    pic_url=models.CharField(max_length=200,null=True)
 
     # ForeignKey :Gifts
     gifts=models.ForeignKey(to='Gifts',to_field='id',on_delete=models.CASCADE,default=1)
@@ -145,6 +145,9 @@ class GiftsCollect(models.Model):
     # ForeignKey :UserInfo
     userinfo = models.ForeignKey(to=UserInfo, to_field='id', on_delete=models.CASCADE, default=1)
 
+    # 状态
+    collectStatus = models.SmallIntegerField(default=0)
+
 
 
 # 礼物点赞表 GiftsThumb表
@@ -154,6 +157,8 @@ class GiftsThumb(models.Model):
 
     # ForeignKey :UserInfo
     userinfo = models.ForeignKey(to=UserInfo, to_field='id', on_delete=models.CASCADE, default=1)
+
+    thumb_status = models.SmallIntegerField(default=0)
 
 
 

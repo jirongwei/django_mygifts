@@ -8,7 +8,7 @@ class Tribune(models.Model):
     # 自动创建一个id列，id为主键，自增长
 
     # 攻略标题信息
-    ttitle = models.CharField(max_length=32)
+    ttitle = models.CharField(max_length=100)
 
     # 攻略标题图片
     ttitleimg = models.CharField(max_length=200, null=True)

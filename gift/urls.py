@@ -25,6 +25,9 @@ urlpatterns = [
     url(r'getAllPages/(?P<dayid>\d+),(?P<objid>\d+),(?P<sortid>\d+),(?P<con>\w*),(?P<pindex>\d+)/',views.getAllPages,
         name='getAllPages'),
 
+    # 礼物点赞
+    url(r'^thumbGift\w*/(?P<giftid>\d+)',views.thumbGift,name='thumbGift'),
+
     # gift详情页
     url(r'getgift/(?P<giftid>\d+)/',views.getGiftDetail,name='getgift'),
 

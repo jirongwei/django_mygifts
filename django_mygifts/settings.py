@@ -127,7 +127,7 @@ DATABASES={
         'NAME':'giftsapp',
         'USER':'root',
         'PASSWORD':'123456',
-        'HOST':'47.106.124.242',
+        'HOST':'localhost',
         'PORT':'3306',
     }
 }

@@ -7,7 +7,7 @@ from utils.Tools.tools import *
 
 # tribune首页
 def tribunes(request,page):
-    pagesize=6
+    pagesize=3
     page=int(page)
     if request.method=='GET':
         try:

@@ -314,27 +314,6 @@ def bindPhone(request):
             return JsonResponse({"code": "410"})
 
 
-
-        if str(verification_code) == message and int(time.mktime(datetime.now().timetuple())) - int(
-                time.mktime(register_time.timetuple())) < 60:
-            user['password'] = make_password(user['password'])  # 密码进行加密
-
-            res = models.User.objects.create(telephone=user['telephone'], password=user['password'], role_id_id=1)
-            if res:
-                # 注册成功
-                # 签发token
-                resp = JsonResponse({"code": "202", "id": res.id}, status=200, charset='utf-8',
-                                    content_type='application/json')
-
-                resp['token'] = createToken(res.id)
-                resp['Access-Control-Expose-Headers'] = "token"
-                return resp
-            else:
-                # 注册失败
-                return JsonResponse({"code": "410"}, status=200, charset='utf-8', content_type='application/json')
-        else:
-            return JsonResponse({"statuscode": "407"})
-
 # 获取用户所有地址
 def getAllAddress(request):
     if request.method == 'POST':
